@@ -4,9 +4,9 @@ import glob
 from PIL import Image
 
 count = 1
-source_folder = "/home/kenlog_new/Pictures/photos/*"
+source_folder = "/run/user/1000/gvfs/mtp:host=Xiaomi_Redmi_Note_10_Pro_fb31e353/Внутренний общий накопитель/DCIM/Camera/*"
 dest_folder = "/home/kenlog_new/Pictures/Compressed_images/"
-
+scale = 0.9
 
 def get_size_format(val, factor=1024, suffix='B'):
     """
@@ -65,20 +65,25 @@ def get_latest_files(path, count=1):
         list_of_files.remove(latest_files[i])
     return latest_files
 
-def check_args():
+def check_args(): #change preferences according to sys.argv
     global source_folder
     global dest_folder
     global count
+    global scale
 
     args = sys.argv
 
     if ("--help" in args) or ("-h" in args):
         print("""
-        Help
-        menu
-        asdf
-
-        (complete later)
+        Image compression utility, compresses N latest images in directory SOURCE, saves in DEST directory
+        
+        Params:
+        -c or --count: set N number (1 by default)
+        -d or --destination: set DEST directory
+        -s or --source: set SOURCE
+        -S or --scale: set scale of resizing (from 0.0 to 1.0)
+        
+        By Kenlog
         """)
         return 0
 
@@ -112,6 +117,14 @@ def check_args():
         if '*' not in source_folder:
             source_folder = source_folder + "*"
 
+    if "-S" in args:
+        S_index = args.index("-S")
+        scale = args[S_index + 1]
+
+    if "--scale" in args:
+        S_index = args.index("--scale")
+        scale = args[S_index + 1]
+
 
 def main():
     check_args()
@@ -120,7 +133,8 @@ def main():
     # print(files) #for debug
 
     for file in files:
-        compress_image(file, scale=0.8, dest_path=dest_folder)
+        print("Compressing file: ", file)
+        compress_image(file, scale=scale, dest_path=dest_folder)
 
 
 if __name__ == '__main__':
