@@ -1,4 +1,5 @@
 import os
+import glob
 from PIL import Image
 
 def get_size_format(val, factor = 1024, suffix = 'B'):
@@ -45,8 +46,23 @@ def compress_image(img_name, scale = 0.9, quality = 90, to_JPG = True): #scale m
     new_img_size = os.path.getsize(new_filename)
     print("[+] New image size: ", get_size_format(new_img_size))
 
+def get_latest_files(path, count = 1):
+    list_of_files = glob.glob(path)
+
+    latest_files = []
+
+    for i in range(count):
+        latest_files.append(max(list_of_files, key=os.path.getctime))
+
+        list_of_files.remove(latest_files[i])
+    return latest_files
+
 def main():
-    compress_image("/home/kenlog_new/Pictures/Screenshots/Screenshot from 2022-10-11 14-29-50.png")
+    files = get_latest_files("/home/kenlog_new/Pictures/photos/*", count= 2)
+    #print(files) #for debug
+
+    for file in files:
+        compress_image(file, scale=0.8)
 
 if __name__ == '__main__':
     main()
