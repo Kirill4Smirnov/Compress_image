@@ -23,11 +23,18 @@ def get_size_format(val, factor=1024, suffix='B'):
     return f"{val:.2f}E{suffix}"
 
 
-def compress_image(img_name, dest_path, scale=0.9, quality=90, to_JPG=True):  # scale must be less than 1
+def compress_image(img_name, dest_path, scale=0.9, quality=90, to_JPG=True):
+    """
+        scale must be less than 1
+        also rotates an image if it is horizontally-oriented
+    """
     assert scale < 1.0, f"Scale must be less than 1, your scale is {scale}"
 
     img = Image.open(img_name)
     print("[*] Initial image shape: ", img.size)
+
+    if img.size[0] > img.size[1]:
+        img = img.transpose(Image.Transpose.ROTATE_90)
 
     img_size = os.path.getsize(img_name)
     print("[*] Initial image size: ", get_size_format(img_size))
@@ -128,6 +135,8 @@ def check_args(): #change preferences according to sys.argv
 
 def main():
     check_args()
+
+    print("Source folder is ", source_folder)
 
     files = get_latest_files(source_folder, count=count)
     # print(files) #for debug
