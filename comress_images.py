@@ -27,7 +27,7 @@ def get_size_format(val, factor=1024, suffix='B'):
         val /= factor
     return f"{val:.2f}E{suffix}"
 
-def compress_image(img_name, dest_path, scale=0.9, quality=90, to_JPG=True, rotate_dir = ''):
+def compress_image(img_name, dest_path, scale=0.9, quality=90, to_JPG=True, rotate_dir = '', quiet= False):
     """
         scale must be less than 1
         also rotates an image if it is horizontally-oriented
@@ -72,7 +72,9 @@ def compress_image(img_name, dest_path, scale=0.9, quality=90, to_JPG=True, rota
 
     new_img_size = os.path.getsize(new_filename)
     print("[+] New image size: ", get_size_format(new_img_size))
-    img.show()
+
+    if not quiet:
+        img.show()
 
 
 def get_latest_files(path, count=1):
@@ -92,6 +94,7 @@ def check_args(): #change preferences according to sys.argv
     global count
     global scale
     global rotate
+    global quiet
 
     args = sys.argv
     #print(args) #for debug
@@ -142,6 +145,14 @@ def check_args(): #change preferences according to sys.argv
         r_index = args.index("--rotate")
         rotate = args[r_index + 1]
 
+    if "-q" in args:
+        q_index = args.index("-q")
+        quiet =True
+
+    if "--quiet" in args:
+        q_index = args.index("--quiet")
+        quiet = True
+
     if ("--help" in args) or ("-h" in args):
         print("""
         Image compression utility, compresses N latest images in directory SOURCE, saves in DEST directory
@@ -155,7 +166,8 @@ def check_args(): #change preferences according to sys.argv
             - is 90 degrees clockwise
             + 90 degrees counterclockwise
             a is automatic mode, which rotates the image so that it becomes vertical
-
+        -q or --quiet: disable showing image after conversion
+        
         By Kenlog
         """)
         sys.exit(0)
@@ -170,7 +182,7 @@ def main():
 
     for file in files:
         print("Compressing file: ", file)
-        compress_image(file, scale=scale, dest_path=dest_folder, rotate_dir=rotate)
+        compress_image(file, scale=scale, dest_path=dest_folder, rotate_dir=rotate, quiet = quiet)
 
 
 if __name__ == '__main__':
