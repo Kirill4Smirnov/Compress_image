@@ -1,12 +1,17 @@
 import os
 import sys
+
+sys.path.append('/home/kenlog/PycharmProjects/scripts/compress_image')
+
 import glob
 from PIL import Image
 
+
 count = 1
 source_folder = "/run/user/1000/gvfs/mtp:host=Xiaomi_Redmi_Note_10_Pro_fb31e353/Внутренний общий накопитель/DCIM/Camera/*"
-dest_folder = "/home/kenlog_new/Pictures/Compressed_images/"
+dest_folder = "/home/kenlog/Pictures/Compressed_images/"
 scale = 0.9
+rotate = ''
 
 def get_size_format(val, factor=1024, suffix='B'):
     """
@@ -22,19 +27,27 @@ def get_size_format(val, factor=1024, suffix='B'):
         val /= factor
     return f"{val:.2f}E{suffix}"
 
-
-def compress_image(img_name, dest_path, scale=0.9, quality=90, to_JPG=True):
+def compress_image(img_name, dest_path, scale=0.9, quality=90, to_JPG=True, rotate_dir = ''):
     """
         scale must be less than 1
         also rotates an image if it is horizontally-oriented
+        (for rotate_dir: '' stands for no rotation, '+' for anti-clockwise, '-' for clockwise.
+        'a' is automatic mode, rotates by 90 deg if img.size[0] > img.size[1])
     """
     assert scale < 1.0, f"Scale must be less than 1, your scale is {scale}"
 
     img = Image.open(img_name)
     print("[*] Initial image shape: ", img.size)
 
-    if img.size[0] > img.size[1]:
+    if rotate_dir == 'a':
+        if img.size[0] > img.size[1]:
+            img = img.transpose(Image.Transpose.ROTATE_90)
+    elif rotate_dir == '-':
         img = img.transpose(Image.Transpose.ROTATE_90)
+    elif rotate_dir == '+':
+        img = img.rotate(270, expand=True)
+    elif rotate_dir == '':
+        pass
 
     img_size = os.path.getsize(img_name)
     print("[*] Initial image size: ", get_size_format(img_size))
@@ -59,6 +72,7 @@ def compress_image(img_name, dest_path, scale=0.9, quality=90, to_JPG=True):
 
     new_img_size = os.path.getsize(new_filename)
     print("[+] New image size: ", get_size_format(new_img_size))
+    img.show()
 
 
 def get_latest_files(path, count=1):
@@ -77,22 +91,10 @@ def check_args(): #change preferences according to sys.argv
     global dest_folder
     global count
     global scale
+    global rotate
 
     args = sys.argv
-
-    if ("--help" in args) or ("-h" in args):
-        print("""
-        Image compression utility, compresses N latest images in directory SOURCE, saves in DEST directory
-        
-        Params:
-        -c or --count: set N number (1 by default)
-        -d or --destination: set DEST directory
-        -s or --source: set SOURCE
-        -S or --scale: set scale of resizing (from 0.0 to 1.0)
-        
-        By Kenlog
-        """)
-        return 0
+    #print(args) #for debug
 
     if ("-c" in args):
         c_index = args.index('-c')
@@ -132,6 +134,31 @@ def check_args(): #change preferences according to sys.argv
         S_index = args.index("--scale")
         scale = args[S_index + 1]
 
+    if "-r" in args:
+        r_index = args.index("-r")
+        rotate = args[r_index + 1]
+
+    if "--rotate" in args:
+        r_index = args.index("--rotate")
+        rotate = args[r_index + 1]
+
+    if ("--help" in args) or ("-h" in args):
+        print("""
+        Image compression utility, compresses N latest images in directory SOURCE, saves in DEST directory
+
+        Params:
+        -c or --count: set N number (1 by default)
+        -d or --destination: set DEST directory
+        -s or --source: set SOURCE
+        -S or --scale: set scale of resizing (from 0.0 to 1.0)
+        -r or --rotate: rotate all the images following the pattern:
+            - is 90 degrees clockwise
+            + 90 degrees counterclockwise
+            a is automatic mode, which rotates the image so that it becomes vertical
+
+        By Kenlog
+        """)
+        sys.exit(0)
 
 def main():
     check_args()
@@ -143,7 +170,7 @@ def main():
 
     for file in files:
         print("Compressing file: ", file)
-        compress_image(file, scale=scale, dest_path=dest_folder)
+        compress_image(file, scale=scale, dest_path=dest_folder, rotate_dir=rotate)
 
 
 if __name__ == '__main__':
