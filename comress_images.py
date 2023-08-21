@@ -8,11 +8,11 @@ from PIL import Image
 
 
 count = 1
-source_folder = "/run/user/1000/gvfs/mtp:host=Xiaomi_Redmi_Note_10_Pro_fb31e353/Внутренний общий накопитель/DCIM/Camera/*"
+source_folder = "/run/user/1000/gvfs/mtp:host=Xiaomi_Redmi_Note_10_Pro_fb31e353/Internal\ shared\ storage/DCIM/Camera/"
 dest_folder = "/home/kenlog/Pictures/Compressed_images/"
 scale = 0.9
 rotate = ''
-
+quiet = False
 def get_size_format(val, factor=1024, suffix='B'):
     """
        Scale bytes to its proper byte format
